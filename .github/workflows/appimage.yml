@@ -2,9 +2,9 @@ name: TryAppImage
 
 on:
   push:
-    branches: [ master ]
+    branches: [ maser ] #note the typo
   pull_request:
-    branches: [ master ]
+    branches: [ maser ]
 
 jobs:
   build-appimage:
