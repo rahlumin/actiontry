@@ -1,0 +1,150 @@
+# https://data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions/
+
+name: Build
+
+# on  push , if tag as version number, run the createrelease job:
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+
+  createrelease: # createrelease is a job
+    name: Create Release
+    runs-on: [ubuntu-latest]
+    steps:
+    # in step 1, job createrelease should use a prebuilt action  create-release 
+    # (which is here https://github.com/actions/create-release)
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    #step 2 of createrelease : generate a text file containng release urls only   
+    # just read environment variable steps.create_release.outputs.upload_url 
+    - name: Output Release URL File
+      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+
+    #step 3 of createrelease:  upload this txt file so we can later extract urls fro them
+    # use action https://github.com/actions/upload-artifact for this
+    - name: Save Release URL File for publish
+      uses: actions/upload-artifact@v1
+      with:
+        name: release_url
+        path: release_url.txt
+
+
+  # after createrelease has finished, run the next job, build 
+  build: # a job 
+    name: Build packages
+    needs: createrelease
+    runs-on: ${{ matrix.os }}
+    #matrix strategy allows us to performamultiple runs using array members
+    # for each strategy (say one os), you provide all the commands
+    strategy:
+      matrix:
+        go-version: [1.17.x]
+        os: [ ubuntu-latest, windows-2019] # 3 OS es
+        include:         
+          - os: ubuntu-latest
+            TARGET: linux
+            SHELL: bash
+            CMD_RESOLVE_DEPS: |
+              sudo apt-get update
+              sudo apt-get -y install libgtk-3-dev libappindicator3-dev
+            CMD_BUILD: |
+              go mod tidy -compat="1.17"
+              go build -o build/clipster_linux -ldflags "-s -w" .
+              cd build && zip -r9 clipster_linux clipster_linux
+            OUT_FILE_NAME: clipster_linux.zip
+            ASSET_MIME: application/zip  # application/octet-stream
+          #OS 3  
+          - os: windows-2019
+            TARGET: windows
+            SHELL: msys2 {0}
+            CMD_BUILD: |
+              go get github.com/akavel/rsrc && rsrc -ico assets/clipster_icon_64.ico
+              mkdir -p build/clipster build/bin/ build/lib/
+              mkdir -p build/share/glib-2.0/ build/share/icons/Adwaita/
+              sed -i -e 's/-Wl,-luuid/-luuid/g' /mingw64/lib/pkgconfig/gdk-3.0.pc
+              go mod tidy -compat="1.17"
+              go build -o build/bin/clipster_win.exe -ldflags "-H=windowsgui -s -w" .
+              mv /mingw64/bin/*.dll build/bin/
+              mv /mingw64/share/icons/hicolor/ build/share/icons/
+              cp /mingw64/share/icons/Adwaita/* build/share/icons/Adwaita/ || :
+              mv /mingw64/share/icons/Adwaita/16x16/ build/share/icons/Adwaita/
+              mv /mingw64/share/glib-2.0/schemas/  build/share/glib-2.0/
+              mv /mingw64/lib/gdk-pixbuf-2.0/ build/lib/
+              cd build && mv * clipster/ || :
+              zip -r9 clipster_win clipster/
+            OUT_FILE_NAME: clipster_win.zip
+            ASSET_MIME: application/zip
+
+    #                     
+    steps:
+    - uses: s-weigand/setup-conda@v1
+      with:
+        activate-conda: false
+        update-conda: true
+        conda-channels: conda-forge
+      if: runner.os == 'macOS'
+    - name: Resolve dependencies for ${{ matrix.TARGET }}
+      if: runner.os == 'Linux' || runner.os == 'macOS'
+      run: ${{ matrix.CMD_RESOLVE_DEPS }}
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Checkout repo
+      uses: actions/checkout@v2
+    - name: Install and use MINGW64
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        path-type: inherit
+        install: >-
+          mingw-w64-x86_64-pkg-config
+          mingw-w64-x86_64-gtk3
+          mingw-w64-x86_64-gcc
+          glib2-devel
+          base-devel
+          zip
+      if: runner.os == 'Windows'
+    - name: Build Go for ${{ matrix.TARGET }}
+      run: ${{ matrix.CMD_BUILD }}
+      shell: bash
+      if: runner.os == 'Linux' || runner.os == 'macOS'
+    - name: Build Go for ${{ matrix.TARGET }}
+      run: ${{ matrix.CMD_BUILD }}
+      shell: msys2 {0}
+      if: runner.os == 'Windows'
+    - name: Post build for ${{ matrix.TARGET }}
+      run: ${{ matrix.CMD_POST_BUILD }}
+      if: runner.os == 'macOS'
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v1
+      with:
+        name: release_url
+    - name: Get Release File Name & Upload URL
+      id: get_release_info
+      shell: bash
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo ::set-output name=upload_url::$value
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ./build/${{ matrix.OUT_FILE_NAME}}
+        asset_name: ${{ matrix.OUT_FILE_NAME}}
+        asset_content_type: ${{ matrix.ASSET_MIME}}
