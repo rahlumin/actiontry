@@ -5,7 +5,12 @@ on:
   #  branches: [ maser ] #note the typo
   #pull_request:
   #  branches: [ maser ]
-  workflow_dispatch:  
+  workflow_dispatch:
+      inputs:
+        reltag:
+          description: "tag for release, eg v1.0.0"
+          default: "latest"       
+ 
   
 
 jobs:
@@ -31,12 +36,12 @@ jobs:
         with:
           name: AppImage 
           path: "./dist/*.AppImage*"
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - uses: "marvinpinto/action-automatic-releases@${{ github.event.inputs.reltag }}" #@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"          
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
+          automatic_release_tag: "${{ github.event.inputs.reltag }}"
+          prerelease: false
+          title: "Build ${{ github.event.inputs.reltag }}"
           files: |            
             ./dist/*.AppImage*
 
