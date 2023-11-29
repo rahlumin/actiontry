@@ -16,6 +16,8 @@ on:
 jobs:
   build-appimage:
     runs-on: ubuntu-20.04
+    env:
+      TAGNAME: ${{ inputs.reltag }}
 
     steps:
       - uses: actions/checkout@v2 #1
@@ -36,12 +38,12 @@ jobs:
         with:
           name: AppImage 
           path: "./dist/*.AppImage*"
-      - uses: "marvinpinto/action-automatic-releases@${{ inputs.reltag }}" #@latest
+      - uses: "marvinpinto/action-automatic-releases@${{ env.TAGNAME }}" #@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"          
           automatic_release_tag: "${{ inputs.reltag }}"
           prerelease: false
-          title: "Build ${{ inputs.reltag }}"
+          title: "Build ${{ env.TAGNAME }}"
           files: |            
             ./dist/*.AppImage*
 
