@@ -16,8 +16,12 @@ Check the two workflows in the [.github/workflows](https://github.com/rahlumin/a
                  From `briefcase` perspective, The important thing to note here is that briefcase config file `pyproject.toml` 
                   should be present at the root of the project and the source should be in `src` directory
 
- 2. **workflow2.yml** includes all the code in appimage.yml , but goes one step further and takes user input for a tag. Then it uses this info to create a public release with all the files. 
-                  This is  the ore useful of the two workflows but is slightly more complex than appimage.yml
+ 2. **workflow2.yml** includes all the code in appimage.yml , but goes one step further and takes user input for a tag. 
+                      Then it uses this info to create a public release with all the   files. 
+                      This is  the more useful, but slightly more complex than appimage.yml
+ 3. **workflowmulti.yml** Includes all the code in above two workflows, but also creates a  `.deb` file along with the usual `.Appimage` file. 
+                          Both are created in a single job which is run on a Ubuntu runner as before. This makes it a simple extension of above workflows. Had we needed to create an i                                installer for Windows, we would have needed a windows runner as well. 
+       
 
 ## Outro 
 &copy; Rahul Singh
