@@ -1,16 +1,17 @@
 # actiontry
-understanding github actions
+**understanding github actions and use beeware briefcase in a github action**
 
+## Intro 
 This project is for my own understanding and memory, and does the following : 
 
-1. Uses [beeware briefcase](https://beeware.org/project/projects/tools/briefcase/) in a github workflow
-2. shows probably the simplest way to use a github action to create release with a binary installaation file
+1. Uses [beeware briefcase](https://beeware.org/project/projects/tools/briefcase/) to generate appimage file in a github workflow
+2. shows probably the simplest way to use a github action to create release with a binary installation file
 
 ## How to use
 
-Check the two workflows in the [.github/workflows](https://github.com/rahlumin/actiontry/tree/maser/.github/workflows) directory of this repo. Both these workflows are set to be run amnually. 
+Check the two workflows in the [.github/workflows](https://github.com/rahlumin/actiontry/tree/maser/.github/workflows) directory of this repo. Both these workflows are set to be run manually. 
 
-1. **appimage.yml:** shows a very simple github workflow for creating the appimage  from the code in the repository, and relases it as a draft.
+1. **appimage.yml:** shows a very simple github workflow for creating the appimage  from the code in the repository, and releases it as a draft.
                  This particular project uses beeware briefcase for build , and generates an `Appimage` for linux systems, you can use any build options of choice. 
                  From `briefcase` perspective, The important thing to note here is that briefcase config file `pyproject.toml` 
                   should be present at the root of the project and the source should be in `src` directory
@@ -18,5 +19,6 @@ Check the two workflows in the [.github/workflows](https://github.com/rahlumin/a
  2. **workflow2.yml** includes all the code in appimage.yml , but goes one step further and takes user input for a tag. Then it uses this info to create a public release with all the files. 
                   This is  the ore useful of the two workflows but is slightly more complex than appimage.yml
 
-       
+## Outro 
+&copy; Rahul Singh
 
