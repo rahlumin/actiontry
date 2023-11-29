@@ -38,7 +38,7 @@ jobs:
         with:
           name: AppImage 
           path: "./dist/*.AppImage*"
-      - uses: marvinpinto/action-automatic-releases@${{  github.event.inputs.reltag }} #@latest
+      - uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"          
           automatic_release_tag: "${{ inputs.reltag }}"
