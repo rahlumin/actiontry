@@ -38,12 +38,12 @@ jobs:
         with:
           name: AppImage 
           path: "./dist/*.AppImage*"
-      - uses: marvinpinto/action-automatic-releases@${{ env.TAGNAME }} #@latest
+      - uses: marvinpinto/action-automatic-releases@${{  github.event.inputs.reltag }} #@latest
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"          
           automatic_release_tag: "${{ inputs.reltag }}"
           prerelease: false
-          title: "Build ${{ env.TAGNAME }}"
+          title: "Build ${{ github.event.inputs.reltag }}"
           files: |            
             ./dist/*.AppImage*
 
