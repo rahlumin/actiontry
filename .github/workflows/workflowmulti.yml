@@ -37,10 +37,10 @@ jobs:
           briefcase package linux appimage   #this creates appimage file 
           briefcase package                  #this creates .deb file on ubuntu  
 
-      #- uses: actions/upload-artifact@v2 #5
-      #  with:
-      #    name: linuxartifacts 
-      #    path: "./dist/*.AppImage*"
+      - uses: actions/upload-artifact@v2 #5
+        with:
+          name: linuxartifacts 
+          path: "./dist/"
 
       - uses: marvinpinto/action-automatic-releases@latest # {{xyz}}varaibles not available in uses
         with:
