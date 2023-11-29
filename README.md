@@ -1,5 +1,5 @@
 # actiontry
-**understanding github actions and use beeware briefcase in a github action**
+**Understanding Github Actions And Using Beeware Briefcase In A Github Workflow**
 
 ## Intro 
 This project is for my own understanding and memory, and does the following : 
