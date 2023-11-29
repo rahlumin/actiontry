@@ -6,9 +6,10 @@ on:
   #pull_request:
   #  branches: [ maser ]
   workflow_dispatch:
-      inputs:
+      inputs: #when run, ask user to input release tag
         reltag:
           description: "tag for release, eg v1.0.0"
+          required: true
           default: "latest"       
  
   
@@ -38,12 +39,12 @@ jobs:
         with:
           name: AppImage 
           path: "./dist/*.AppImage*"
-      - uses: marvinpinto/action-automatic-releases@latest
+      - uses: marvinpinto/action-automatic-releases@latest #varaibles not available in uses
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"          
-          automatic_release_tag: "${{ inputs.reltag }}"
+          automatic_release_tag: "${{ inputs.reltag }}" 
           prerelease: false
-          title: "Build ${{ github.event.inputs.reltag }}"
+          title: "Build ${{ github.event.inputs.reltag }}" #same as inputs.reltag 
           files: |            
             ./dist/*.AppImage*
 
