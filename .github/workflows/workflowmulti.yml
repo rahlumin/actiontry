@@ -1,4 +1,4 @@
-name: TryAppImage2
+name: TryAppImageMulti
 
 on:
   #push:
