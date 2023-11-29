@@ -12,7 +12,8 @@ author_email = "zyz@example.com"
 
 [tool.briefcase.app.hellopyqt]
 formal_name = "hellopyqt"
-description = "My first application"
+description = "simple hello world "
+long_description = """A simple python + qt Hello World application which is packaged using briefcase """
 icon = "src/hellopyqt/resources/hellopyqt"
 sources = ['src/hellopyqt']
 requires = [
