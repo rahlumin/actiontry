@@ -30,25 +30,34 @@ jobs:
       - uses: actions/setup-python@v3 #2
         with:
           python-version: '3.8.10'
-
-      - name: install dependencies #3  This wil depend on OS 
-        run: |
-          if: runner.os == 'Linux' :
+      # if else is a bit tricky on actions if you are using 'if: runner.os == ' notation
+      # so let me break it in two parts
+      # interestingly , no commands are exclusive for windows, so out code does not have 
+      #  the if stetement if: runner.os == 'Windows'
+      - name: install dependencies Linux  
+        if: runner.os == 'Linux' 
+        run: |          
               sudo apt update
               sudo apt install -yq build-essential git pkg-config python3-dev python3-venv \
               libgirepository1.0-dev libcairo2-dev \
-              gir1.2-webkit2-4.0 libcanberra-gtk3-module libgl1 libglib2.0-0
-              python -m pip install briefcase
-          if: runner.os == 'Windows' : 
-                 python -m pip install briefcase
-
-      - name: Build Installers #4                # This too will depend on OS
+              gir1.2-webkit2-4.0 libcanberra-gtk3-module libgl1 libglib2.0-0              
+              
+      - name: install briefcase                  # All OSs  will run this command      
         run: |
-          briefcase build                        # All  OSs
-          if: runner.os == 'Linux' :
-              briefcase package linux appimage   # creates appimage file 
+             python -m pip install briefcase
 
-          briefcase package                      # creates .deb file on ubuntu, .msi on windows  
+      - name: Perform briefcase build  #4         #  Al OSs will run this command
+        run: 
+          briefcase build                         # All  OSs
+      - name: Briefcase package linux   
+        if: runner.os == 'Linux' 
+        run: 
+            briefcase package linux appimage      # creates appimage file 
+                     
+      - name: Briefcase package system           #  All OSs    
+        run:             
+            briefcase package                     # creates .deb file on ubuntu, .msi on windows  
+               
 
       - uses: actions/upload-artifact@v2 #5
         with:
