@@ -1,0 +1,72 @@
+name: TryInstallersMultiOS
+
+on:
+  #push:
+  #  branches: [ maser ] #note the typo
+  #pull_request:
+  #  branches: [ maser ]
+  workflow_dispatch:
+      inputs: #when run, ask user to input release tag
+        reltag:
+          description: "tag for release, eg v1.0.0"
+          required: true
+          default: "latest"       
+ 
+  
+
+jobs:
+  build-installersmulti:
+    runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [ubuntu-20.04, windows-2019]
+                
+    env: 
+      TAGNAME: ${{ inputs.reltag }} #ask user for release tag
+
+    steps:
+      - uses: actions/checkout@v2 #1
+      - uses: actions/setup-python@v3 #2
+        with:
+          python-version: '3.8.10'
+
+      - name: install dependencies #3
+        run: |
+          if: runner.os == 'Linux' :
+              sudo apt update
+              sudo apt install -yq build-essential git pkg-config python3-dev python3-venv \
+              libgirepository1.0-dev libcairo2-dev \
+              gir1.2-webkit2-4.0 libcanberra-gtk3-module libgl1 libglib2.0-0
+              python -m pip install briefcase
+          if: runner.os == 'Windows' : 
+                 python -m pip install briefcase
+
+      - name: Build Installers #4
+        run: |
+          briefcase build                        # All  OSs
+          if: runner.os == 'Linux' :
+              briefcase package linux appimage   # creates appimage file 
+
+          briefcase package                      # creates .deb file on ubuntu, .msi on windows  
+
+      - uses: actions/upload-artifact@v2 #5
+        with:
+          name: linuxartifacts 
+          path: "./dist/" # directory
+
+      - uses: marvinpinto/action-automatic-releases@latest # {{xyz}}varaibles not available in uses
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"          
+          automatic_release_tag: "${{ inputs.reltag }}" 
+          prerelease: true
+          title: "Build ${{ github.event.inputs.reltag }}" #same as inputs.reltag 
+          files: |            
+            ./dist/*
+            
+
+
+          
+          
+
+          
