@@ -18,8 +18,8 @@ jobs:
   build-installersmulti:
     runs-on: ${{ matrix.os }}
 
-        strategy:
-            matrix:
+    strategy:
+          matrix:
                 os: [ubuntu-20.04, windows-2019]
                 
     env: 
@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: '3.8.10'
 
-      - name: install dependencies #3
+      - name: install dependencies #3  This wil depend on OS 
         run: |
           if: runner.os == 'Linux' :
               sudo apt update
@@ -42,7 +42,7 @@ jobs:
           if: runner.os == 'Windows' : 
                  python -m pip install briefcase
 
-      - name: Build Installers #4
+      - name: Build Installers #4                # This too will depend on OS
         run: |
           briefcase build                        # All  OSs
           if: runner.os == 'Linux' :
