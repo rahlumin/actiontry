@@ -61,7 +61,7 @@ jobs:
 
       - uses: actions/upload-artifact@v2 #5
         with:
-          name: linuxartifacts 
+          name: linuxartifacts ${{ matrix.os }}
           path: "./dist/" # directory
 
       - uses: marvinpinto/action-automatic-releases@latest # {{xyz}}varaibles not available in uses
